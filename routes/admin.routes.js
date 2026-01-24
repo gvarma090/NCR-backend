@@ -1,87 +1,127 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const db = require("../db");
+const db = require('../db');
 
 /* =========================
-   ADMIN → LIST DRIVERS
+   GET PENDING DRIVERS
 ========================= */
-router.get("/drivers", async (req, res) => {
+router.get('/drivers/pending', async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        u.id,
+        u.phone,
+        u.vehicle_type,
+        u.approval_status
+      FROM users u
+      INNER JOIN driver_documents d
+        ON d.user_id = u.id
+      WHERE u.role = 'DRIVER'
+        AND u.approval_status = 'PENDING'
+      ORDER BY u.created_at ASC
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('ADMIN PENDING ERROR:', err);
+    res.status(500).json({ error: 'Failed to load pending drivers' });
+  }
+});
+
+/* =========================
+   APPROVE DRIVER
+========================= */
+router.post('/driver/approve', async (req, res) => {
+  const { userId } = req.body;
+
+  await db.query(
+    `UPDATE users
+     SET approval_status='APPROVED',
+         approved_at=NOW()
+     WHERE id=$1`,
+    [userId]
+  );
+
+  res.json({ message: 'Driver approved' });
+});
+
+/* =========================
+   REJECT DRIVER
+========================= */
+router.post('/driver/reject', async (req, res) => {
+  const { userId } = req.body;
+
+  await db.query(
+    `UPDATE users
+     SET approval_status='REJECTED'
+     WHERE id=$1`,
+    [userId]
+  );
+
+  res.json({ message: 'Driver rejected' });
+});
+
+/* =========================
+   LIVE RIDES
+========================= */
+router.get('/rides/live', async (req, res) => {
   const result = await db.query(`
-    SELECT
-      u.phone,
-      dv.vehicle_type,
-      COALESCE(dv.approved,false) AS approved
-    FROM public.users u
-    LEFT JOIN public.driver_vehicles dv
-      ON u.phone = dv.phone
-    WHERE u.role='DRIVER'
-    ORDER BY u.created_at DESC
+    SELECT id, source, destination, status
+    FROM rides
+    WHERE status IN ('REQUESTED','ACCEPTED','ONGOING')
+    ORDER BY created_at DESC
   `);
 
-  res.json(
-    result.rows.map(r => ({
-      phone: r.phone,
-      vehicleType: r.vehicle_type,
-      approvalStatus: r.approved ? "APPROVED" : "PENDING"
-    }))
-  );
+  res.json(result.rows);
 });
-
 /* =========================
-   ADMIN → APPROVE DRIVER VEHICLE ✅ (MISSING!)
+   GET ALL DRIVERS (FILTER)
 ========================= */
-router.post("/driver/approve", async (req, res) => {
-  const { phone, vehicleType } = req.body;
+router.get('/drivers', async (req, res) => {
+  const { status, vehicle } = req.query;
 
-  if (!phone || !vehicleType) {
-    return res.status(400).json({ message: "phone & vehicleType required" });
+  let conditions = [`role='DRIVER'`];
+  let values = [];
+
+  if (status) {
+    values.push(status);
+    conditions.push(`approval_status=$${values.length}`);
   }
 
-  await db.query(
-    `INSERT INTO public.driver_vehicles (phone, vehicle_type, approved)
-     VALUES ($1,$2,true)
-     ON CONFLICT (phone, vehicle_type)
-     DO UPDATE SET approved=true`,
-    [phone, vehicleType]
-  );
-
-  res.json({ success: true });
-});
-
-/* =========================
-   ADMIN → BLOCK DRIVER VEHICLE
-========================= */
-router.post("/driver/block", async (req, res) => {
-  const { phone, vehicleType } = req.body;
-
-  if (!phone || !vehicleType) {
-    return res.status(400).json({ message: "phone & vehicleType required" });
+  if (vehicle) {
+    values.push(vehicle);
+    conditions.push(`vehicle_type=$${values.length}`);
   }
 
-  await db.query(
-    `UPDATE public.driver_vehicles
-     SET approved=false
-     WHERE phone=$1 AND vehicle_type=$2`,
-    [phone, vehicleType]
-  );
+  const query = `
+    SELECT id, phone, vehicle_type, approval_status, blocked
+    FROM users
+    WHERE ${conditions.join(' AND ')}
+    ORDER BY created_at DESC
+  `;
 
-  res.json({ success: true });
+  const result = await db.query(query, values);
+  res.json(result.rows);
 });
 
 /* =========================
-   DRIVER → APPROVED CHECK
+   BLOCK / UNBLOCK DRIVER
 ========================= */
-router.get("/driver/approved/:phone", async (req, res) => {
-  const result = await db.query(
-    `SELECT 1
-     FROM public.driver_vehicles
-     WHERE phone=$1 AND approved=true
-     LIMIT 1`,
-    [req.params.phone]
+router.post('/driver/block', async (req, res) => {
+  const { userId, blocked } = req.body;
+
+  await db.query(
+    `UPDATE users
+     SET blocked=$2
+     WHERE id=$1`,
+    [userId, blocked]
   );
 
-  res.json({ approved: result.rows.length > 0 });
+  res.json({
+    message: blocked ? 'Driver blocked' : 'Driver unblocked'
+  });
 });
+
 
 module.exports = router;
 

@@ -2,108 +2,57 @@
 <html>
 <head>
   <title>NCR Admin Panel</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body { font-family: Arial; background:#f8fafc; padding:20px; }
-    h2 { margin-bottom:10px; }
-    button { margin:4px; padding:6px 10px; }
-    table { width:100%; border-collapse: collapse; background:#fff; }
-    th, td { padding:10px; border-bottom:1px solid #ddd; text-align:left; }
-    th { background:#0f172a; color:#fff; }
-    .pending { color:orange; font-weight:bold; }
-    .approved { color:green; font-weight:bold; }
-    .blocked { color:red; font-weight:bold; }
-  </style>
+  <link rel="stylesheet" href="admin.css" />
 </head>
-
 <body>
-  <h2>🚦 NCR Admin – Driver Management</h2>
 
-  <button onclick="loadDrivers('PENDING')">⏳ Pending</button>
-  <button onclick="loadDrivers('APPROVED')">✅ Approved</button>
-  <button onclick="loadDrivers('BLOCKED')">🚫 Blocked</button>
+<!-- LOGIN -->
+<div id="login" class="center-card">
+  <h1 class="brand">NCR</h1>
+  <h3>Admin Login</h3>
+  <input type="password" id="password" placeholder="Admin Password" />
+  <button onclick="login()">Login</button>
+</div>
 
-  <br/><br/>
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none">
 
-  <table>
-    <thead>
-      <tr>
-        <th>Phone</th>
-        <th>Vehicle</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="drivers"></tbody>
-  </table>
+  <header>
+    <h2>🚖 NCR Admin Dashboard</h2>
+  </header>
 
-<script>
-const API = location.origin + "/api/admin";
+  <!-- FILTER BAR -->
+  <div class="filters">
+    <select id="statusFilter" onchange="loadDrivers()">
+      <option value="">All Status</option>
+      <option value="PENDING">Pending</option>
+      <option value="APPROVED">Approved</option>
+      <option value="REJECTED">Rejected</option>
+    </select>
 
-async function loadDrivers(status) {
-  const res = await fetch(`${API}/drivers?status=${status}`);
-  const data = await res.json();
+    <select id="vehicleFilter" onchange="loadDrivers()">
+      <option value="">All Vehicles</option>
+      <option value="BIKE">Bike</option>
+      <option value="AUTO">Auto</option>
+      <option value="CAB">Cab</option>
+    </select>
+  </div>
 
-  const tbody = document.getElementById("drivers");
-  tbody.innerHTML = "";
+  <!-- DRIVERS -->
+  <section>
+    <h3>👨‍✈️ Drivers</h3>
+    <div id="drivers" class="grid"></div>
+  </section>
 
-  data.forEach(d => {
-    const tr = document.createElement("tr");
+  <!-- RIDES -->
+  <section>
+    <h3>📍 Live Rides</h3>
+    <div id="rides" class="grid"></div>
+  </section>
 
-    const statusText = d.blocked
-      ? "<span class='blocked'>BLOCKED</span>"
-      : d.approval_status === "APPROVED"
-        ? "<span class='approved'>APPROVED</span>"
-        : "<span class='pending'>PENDING</span>";
+</div>
 
-    tr.innerHTML = `
-      <td>${d.phone}</td>
-      <td>${d.vehicle_type}</td>
-      <td>${statusText}</td>
-      <td>
-        ${!d.blocked && d.approval_status === "PENDING"
-          ? `<button onclick="approve('${d.phone}')">Approve</button>`
-          : ""}
-        ${!d.blocked
-          ? `<button onclick="block('${d.phone}')">Block</button>`
-          : `<button onclick="unblock('${d.phone}')">Unblock</button>`}
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-
-async function approve(phone) {
-  await fetch(`${API}/approve`, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ phone })
-  });
-  loadDrivers("PENDING");
-}
-
-async function block(phone) {
-  await fetch(`${API}/block`, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ phone })
-  });
-  loadDrivers("APPROVED");
-}
-
-async function unblock(phone) {
-  await fetch(`${API}/unblock`, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ phone })
-  });
-  loadDrivers("BLOCKED");
-}
-
-// Load pending by default
-loadDrivers("PENDING");
-</script>
-
+<script src="admin.js"></script>
 </body>
 </html>
 

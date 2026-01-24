@@ -1,0 +1,117 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #333;
+}
+
+.brand {
+  font-size: 42px;
+  color: #2563eb;
+  margin-bottom: 10px;
+}
+
+header {
+  background: #2563eb;
+  color: white;
+  padding: 16px 24px;
+}
+
+.center-card {
+  max-width: 360px;
+  margin: 120px auto;
+  padding: 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.center-card input {
+  width: 100%;
+  padding: 12px;
+  margin: 16px 0;
+  font-size: 16px;
+}
+
+.center-card button {
+  width: 100%;
+  padding: 12px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+}
+
+.filters select {
+  padding: 10px;
+  font-size: 14px;
+}
+
+section {
+  padding: 0 20px 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.card b {
+  display: inline-block;
+  width: 90px;
+}
+
+.status-PENDING {
+  color: orange;
+  font-weight: bold;
+}
+
+.status-APPROVED {
+  color: green;
+  font-weight: bold;
+}
+
+.status-REJECTED {
+  color: red;
+  font-weight: bold;
+}
+
+.card button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}
+
+.card button.approve {
+  background: #16a34a;
+  color: white;
+}
+
+.card button.block {
+  background: #dc2626;
+  color: white;
+}
+
+.card button.unblock {
+  background: #2563eb;
+  color: white;
+}
+

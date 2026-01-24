@@ -1,66 +1,102 @@
-const API = "/api/admin";
+const API = '/api';
 
-async function loadDrivers(filter) {
-  const res = await fetch(`${API}/drivers`);
+function login() {
+  if (document.getElementById('password').value !== 'admin123') {
+    alert('Wrong password');
+    return;
+  }
+
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  loadDrivers();
+  loadRides();
+}
+
+/* =========================
+   LOAD DRIVERS
+========================= */
+async function loadDrivers() {
+  const status = document.getElementById('statusFilter').value;
+  const vehicle = document.getElementById('vehicleFilter').value;
+
+  let url = `${API}/admin/drivers?`;
+  if (status) url += `status=${status}&`;
+  if (vehicle) url += `vehicle=${vehicle}`;
+
+  const res = await fetch(url);
   const drivers = await res.json();
 
-  const tbody = document.getElementById("drivers");
-  tbody.innerHTML = "";
+  const container = document.getElementById('drivers');
+  container.innerHTML = '';
 
-  drivers
-    .filter(d => {
-      if (filter === "BLOCKED") return d.blocked;
-      return d.approval_status === filter && !d.blocked;
-    })
-    .forEach(d => {
-      const tr = document.createElement("tr");
+  drivers.forEach(d => {
+    const div = document.createElement('div');
+    div.className = 'card';
 
-      tr.innerHTML = `
-        <td>${d.phone}</td>
-        <td>${d.vehicle_type}</td>
-        <td>${d.approval_status}</td>
-        <td>${d.blocked}</td>
-        <td>
-          ${d.approval_status !== "APPROVED"
-            ? `<button onclick="approve('${d.phone}')">Approve</button>`
-            : ""}
-          ${!d.blocked
-            ? `<button onclick="block('${d.phone}')">Block</button>`
-            : `<button onclick="unblock('${d.phone}')">Unblock</button>`}
-        </td>
-      `;
+    div.innerHTML = `
+      <b>Phone:</b> ${d.phone}<br/>
+      <b>Vehicle:</b> ${d.vehicle_type}<br/>
+      <b>Status:</b>
+      <span class="status-${d.approval_status}">
+       ${d.approval_status}
+      </span><br/>
+      <b>Blocked:</b> ${d.blocked ? 'YES' : 'NO'}<br/>
+      ${
+        d.approval_status === 'PENDING'
+          ? `<button class="approve" onclick="approve('${d.id}')">Approve</button>`
+          : ''
+      }
+      <button class="${d.blocked ? 'unblock' : 'block'}"
+        onclick="toggleBlock('${d.id}', ${!d.blocked})">
+	${d.blocked ? 'Unblock' : 'Block'}
+      </button>
+    `;
 
-      tbody.appendChild(tr);
-    });
-}
-
-async function approve(phone) {
-  await fetch(`${API}/approve`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone })
+    container.appendChild(div);
   });
-  loadDrivers("PENDING");
 }
 
-async function block(phone) {
-  await fetch(`${API}/block`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone })
+/* =========================
+   ACTIONS
+========================= */
+async function approve(userId) {
+  await fetch(`${API}/admin/driver/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
   });
-  loadDrivers("APPROVED");
+  loadDrivers();
 }
 
-async function unblock(phone) {
-  await fetch(`${API}/unblock`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ phone })
+async function toggleBlock(userId, block) {
+  await fetch(`${API}/admin/driver/block`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, blocked: block }),
   });
-  loadDrivers("BLOCKED");
+  loadDrivers();
 }
 
-/* Load pending by default */
-loadDrivers("PENDING");
+/* =========================
+   LIVE RIDES
+========================= */
+async function loadRides() {
+  const res = await fetch(`${API}/admin/rides/live`);
+  const rides = await res.json();
+
+  const container = document.getElementById('rides');
+  container.innerHTML = '';
+
+  rides.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+      Ride #${r.id}<br/>
+      ${r.source} → ${r.destination}<br/>
+      Status: ${r.status}
+    `;
+    container.appendChild(div);
+  });
+}
 
