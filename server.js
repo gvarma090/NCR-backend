@@ -12,10 +12,11 @@ const adminRoutes = require("./routes/admin.routes");
 const pricingRoutes = require("./routes/pricing");
 const rideEstimateRoutes = require("./routes/rideEstimate");
 const rideAcceptRoutes = require("./routes/rideAccept");
-const rideOtpRoutes = require("./routes/rideOtp");       // ✅ OTP
+const rideOtpRoutes = require("./routes/rideOtp");
 const rideCompleteRoutes = require("./routes/rideComplete");
 const debugMatchingRoutes = require("./routes/debugMatching");
-const driverDocumentsRoutes = require('./routes/driver.documents.routes');
+const driverDocumentsRoutes = require("./routes/driver.documents.routes");
+const rideLifecycleRoutes = require("./routes/rides.lifecycle.routes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -33,15 +34,18 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/pricing", pricingRoutes);
 
+/* RIDES */
 app.use("/api/rides", rideRoutes);
 app.use("/api/rides", rideEstimateRoutes);
 app.use("/api/rides", rideAcceptRoutes);
-app.use("/api/rides", rideOtpRoutes);        // ✅ NOW REGISTERED
+app.use("/api/rides", rideOtpRoutes);
 app.use("/api/rides", rideCompleteRoutes);
+app.use("/api/rides", rideLifecycleRoutes);
 
+/* ADMIN & DEBUG */
 app.use("/api/admin", adminRoutes);
 app.use("/api/debug", debugMatchingRoutes);
-app.use('/api/driver', driverDocumentsRoutes);
+app.use("/api/driver", driverDocumentsRoutes);
 
 /* ADMIN UI */
 app.use("/admin", express.static(__dirname + "/admin"));
