@@ -1,57 +1,73 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const db = require('../db');
+const db = require("../db");
 
-router.post('/documents', async (req, res) => {
+/* =========================
+   SUBMIT DRIVER DOCUMENTS
+========================= */
+router.post("/documents", async (req, res) => {
   try {
     const {
-      userId,
+      phone,
       licenseNumber,
-      licenseImage,
       rcNumber,
       vehiclePlate,
       aadharNumber,
-      selfieImage,
     } = req.body;
 
-    if (
-      !userId ||
-      !licenseNumber ||
-      !licenseImage ||
-      !rcNumber ||
-      !vehiclePlate ||
-      !aadharNumber ||
-      !selfieImage
-    ) {
-      return res.status(400).json({ message: 'Missing fields' });
+    if (!phone || !licenseNumber || !rcNumber || !vehiclePlate || !aadharNumber) {
+      return res.status(400).json({ message: "Missing fields" });
     }
 
-    await db.query(
-      `INSERT INTO driver_documents
-       (user_id, license_number, license_image, rc_number, vehicle_plate, aadhar_number, selfie_image)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [
-        userId,
-        licenseNumber,
-        licenseImage,
-        rcNumber,
-        vehiclePlate,
-        aadharNumber,
-        selfieImage,
-      ]
+    // 🔍 Find driver
+    const userRes = await db.query(
+      `SELECT id FROM users WHERE phone=$1 AND role='DRIVER'`,
+      [phone]
     );
 
+    if (!userRes.rows.length) {
+      return res.status(400).json({ message: "Invalid driver" });
+    }
+
+    const userId = userRes.rows[0].id;
+
+    // ✅ ALWAYS WRITE IMAGE COLUMNS
     await db.query(
-      `UPDATE users
-       SET approval_status='PENDING'
-       WHERE id=$1`,
-      [userId]
+      `
+      INSERT INTO driver_documents (
+        user_id,
+        license_number,
+        license_image,
+        rc_number,
+        vehicle_plate,
+        aadhar_number,
+        selfie_image
+      )
+      VALUES (
+        $1,
+        $2,
+        'PENDING_UPLOAD',
+        $3,
+        $4,
+        $5,
+        'PENDING_UPLOAD'
+      )
+      ON CONFLICT (user_id)
+      DO UPDATE SET
+        license_number = EXCLUDED.license_number,
+        license_image  = 'PENDING_UPLOAD',
+        rc_number      = EXCLUDED.rc_number,
+        vehicle_plate  = EXCLUDED.vehicle_plate,
+        aadhar_number  = EXCLUDED.aadhar_number,
+        selfie_image   = 'PENDING_UPLOAD'
+      `,
+      [userId, licenseNumber, rcNumber, vehiclePlate, aadharNumber]
     );
 
-    res.json({ message: 'Documents submitted. Await admin approval.' });
+    res.json({ success: true });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Document upload failed' });
+    console.error("DOCUMENT SUBMIT ERROR:", err);
+    res.status(500).json({ message: "Failed to submit documents" });
   }
 });
 

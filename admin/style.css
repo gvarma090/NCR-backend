@@ -1,35 +1,160 @@
+/* =========================
+   GLOBAL
+========================= */
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
+  background: #f5f7fb;
+  color: #333;
 }
 
 h1 {
   margin-bottom: 20px;
+  color: #1a237e;
 }
 
+/* =========================
+   FILTERS
+========================= */
+.filters {
+  margin-bottom: 20px;
+}
+
+.filters select,
 .filters button {
   margin-right: 10px;
-  padding: 8px 14px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
   cursor: pointer;
+  background: #fff;
+  font-weight: bold;
 }
 
+/* =========================
+   CARDS (DRIVERS & RIDES)
+========================= */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  border-left: 6px solid #90caf9;
+}
+
+.card b {
+  color: #222;
+}
+
+/* =========================
+   STATUS COLORS
+========================= */
+.status {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* APPROVED = GREEN */
+.status.green {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* PENDING = BLUE */
+.status.blue {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* BLOCKED = RED */
+.status.red {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+button {
+  margin-top: 8px;
+  margin-right: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* APPROVE */
+button.approve {
+  background: #2e7d32;
+  color: white;
+}
+
+/* BLOCK */
+button.block {
+  background: #c62828;
+  color: white;
+}
+
+/* UNBLOCK */
+button.unblock {
+  background: #1565c0;
+  color: white;
+}
+
+/* =========================
+   TABLE (if used)
+========================= */
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 20px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border-bottom: 1px solid #eee;
+  padding: 12px;
 }
 
 th {
-  background: #f4f4f4;
+  background: #e3f2fd;
+  color: #0d47a1;
+  text-align: left;
 }
 
-button {
-  margin-right: 6px;
-  padding: 6px 10px;
+/* =========================
+   LOGIN SCREEN
+========================= */
+#login {
+  max-width: 400px;
+  margin: auto;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+#login input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+#login button {
+  width: 100%;
+  background: #1a237e;
+  color: white;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
 }
 

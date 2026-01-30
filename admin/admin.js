@@ -1,5 +1,7 @@
 const API = '/api';
 
+let refreshTimer = null;
+
 function login() {
   if (document.getElementById('password').value !== 'admin123') {
     alert('Wrong password');
@@ -11,6 +13,11 @@ function login() {
 
   loadDrivers();
   loadRides();
+
+  refreshTimer = setInterval(() => {
+    loadDrivers();
+    loadRides();
+  }, 10000);
 }
 
 /* =========================
@@ -34,22 +41,34 @@ async function loadDrivers() {
     const div = document.createElement('div');
     div.className = 'card';
 
+    const statusClass =
+      d.approval_status === 'APPROVED'
+        ? 'green'
+        : d.approval_status === 'PENDING'
+        ? 'blue'
+        : 'red';
+
     div.innerHTML = `
-      <b>Phone:</b> ${d.phone}<br/>
-      <b>Vehicle:</b> ${d.vehicle_type}<br/>
+      <b>📞 Phone:</b> ${d.phone}<br/>
+      <b>🚗 Vehicle:</b> ${d.vehicle_type || '-'}<br/>
       <b>Status:</b>
-      <span class="status-${d.approval_status}">
-       ${d.approval_status}
+      <span class="status ${statusClass}">
+        ${d.approval_status}
       </span><br/>
-      <b>Blocked:</b> ${d.blocked ? 'YES' : 'NO'}<br/>
+      <b>Blocked:</b>
+      <span class="${d.blocked ? 'red' : 'green'}">
+        ${d.blocked ? 'YES' : 'NO'}
+      </span><br/>
+
       ${
         d.approval_status === 'PENDING'
           ? `<button class="approve" onclick="approve('${d.id}')">Approve</button>`
           : ''
       }
+
       <button class="${d.blocked ? 'unblock' : 'block'}"
         onclick="toggleBlock('${d.id}', ${!d.blocked})">
-	${d.blocked ? 'Unblock' : 'Block'}
+        ${d.blocked ? 'Unblock' : 'Block'}
       </button>
     `;
 
@@ -61,7 +80,7 @@ async function loadDrivers() {
    ACTIONS
 ========================= */
 async function approve(userId) {
-  await fetch(`${API}/admin/driver/approve`, {
+  await fetch(`${API}/admin/drivers/approve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId }),
@@ -69,11 +88,11 @@ async function approve(userId) {
   loadDrivers();
 }
 
-async function toggleBlock(userId, block) {
-  await fetch(`${API}/admin/driver/block`, {
+async function toggleBlock(userId, blocked) {
+  await fetch(`${API}/admin/drivers/block`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, blocked: block }),
+    body: JSON.stringify({ userId, blocked }),
   });
   loadDrivers();
 }
