@@ -3,57 +3,63 @@ const router = express.Router();
 const db = require("../db");
 
 /* =========================
-   LOGIN / REGISTER
+   LOGIN / REGISTER (SAFE)
 ========================= */
 router.post("/login", async (req, res) => {
   try {
-    const { phone, role, vehicleType } = req.body;
+    const { phone, role } = req.body;
 
     if (!phone || !role) {
-      return res.status(400).json({ message: "Missing fields" });
+      return res.status(400).json({ message: "Missing phone or role" });
     }
 
-    /* 1️⃣ CHECK IF USER EXISTS */
+    // 1️⃣ Find user by PHONE ONLY (single source of truth)
     const userRes = await db.query(
-      `SELECT * FROM public.users WHERE phone=$1 AND role=$2 LIMIT 1`,
-      [phone, role]
+      `SELECT id, phone, role, approval_status, blocked
+       FROM public.users
+       WHERE phone = $1
+       LIMIT 1`,
+      [phone]
     );
 
     let user;
 
-    if (userRes.rows.length) {
-      // ✅ USER EXISTS → DO NOT TOUCH approval_status
-      user = userRes.rows[0];
-    } else {
-      // 🆕 NEW USER → default approval PENDING
+    if (userRes.rows.length === 0) {
+      // 🆕 First time ever → create user
       const insertRes = await db.query(
         `INSERT INTO public.users
          (phone, role, approval_status, blocked)
-         VALUES ($1,$2,'PENDING',false)
-         RETURNING *`,
+         VALUES ($1, $2, 'PENDING', false)
+         RETURNING id, phone, role, approval_status, blocked`,
         [phone, role]
       );
-      user = insertRes.rows[0];
-    }
 
-    /* 2️⃣ DRIVER VEHICLE HANDLING */
-    if (role === "DRIVER" && vehicleType) {
-      await db.query(
-        `INSERT INTO public.driver_vehicles
-         (phone, vehicle_type, approved)
-         VALUES ($1,$2,true)
-         ON CONFLICT (phone, vehicle_type) DO NOTHING`,
-        [phone, vehicleType]
-      );
+      user = insertRes.rows[0];
+    } else {
+      // ✅ Existing user → NEVER touch approval_status
+      user = userRes.rows[0];
+
+      // Update role ONLY if changed
+      if (user.role !== role) {
+        await db.query(
+          `UPDATE public.users
+           SET role = $2
+           WHERE phone = $1`,
+          [phone, role]
+        );
+
+        user.role = role;
+      }
     }
 
     res.json({
       phone: user.phone,
       role: user.role,
       approval_status: user.approval_status,
+      blocked: user.blocked,
     });
-  } catch (e) {
-    console.error("login error", e);
+  } catch (err) {
+    console.error("AUTH LOGIN ERROR:", err);
     res.status(500).json({ message: "Login failed" });
   }
 });

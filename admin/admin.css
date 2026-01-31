@@ -1,22 +1,11 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: #f4f6f8;
   color: #333;
 }
 
-.brand {
-  font-size: 42px;
-  color: #2563eb;
-  margin-bottom: 10px;
-}
-
-header {
-  background: #2563eb;
-  color: white;
-  padding: 16px 24px;
-}
-
+/* === LOGIN PAGE === */
 .center-card {
   max-width: 360px;
   margin: 120px auto;
@@ -27,10 +16,20 @@ header {
   text-align: center;
 }
 
+.brand {
+  font-size: 42px;
+  color: #2563eb;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
 .center-card input {
   width: 100%;
   padding: 12px;
   margin: 16px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
   font-size: 16px;
 }
 
@@ -42,76 +41,135 @@ header {
   border: none;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+}
+
+/* === DASHBOARD LAYOUT === */
+header {
+  background: #2563eb;
+  color: white;
+  padding: 16px 24px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .filters {
   display: flex;
   gap: 12px;
   padding: 20px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
 }
 
 .filters select {
   padding: 10px;
   font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }
 
 section {
-  padding: 0 20px 20px;
+  padding: 20px;
 }
 
+/* === GRID & CARDS === */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 .card {
   background: white;
   border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid #eaeaea;
+  transition: transform 0.2s;
 }
 
-.card b {
-  display: inline-block;
-  width: 90px;
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.status-PENDING {
-  color: orange;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.card p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+/* === VEHICLE BADGES === */
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: bold;
+  text-transform: uppercase;
+}
+.badge-bike { background: #eff6ff; color: #2563eb; } /* Blue */
+.badge-auto { background: #fff7ed; color: #ea580c; } /* Orange */
+.badge-cab  { background: #f0fdf4; color: #16a34a; } /* Green */
+.badge-unknown { background: #f3f4f6; color: #4b5563; } /* Gray */
+
+/* === STATUS COLORS === */
+.status { font-weight: bold; font-size: 13px; }
+.status.pending  { color: #d97706; } /* Amber */
+.status.approved { color: #16a34a; } /* Green */
+.status.rejected { color: #dc2626; } /* Red */
+
+/* === BUTTONS & ACTIONS === */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #f3f4f6;
 }
 
-.status-APPROVED {
-  color: green;
-  font-weight: bold;
-}
-
-.status-REJECTED {
-  color: red;
-  font-weight: bold;
-}
-
-.card button {
-  margin-top: 10px;
-  padding: 8px 12px;
+button {
+  padding: 8px 14px;
   border-radius: 6px;
   border: none;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
 }
 
-.card button.approve {
-  background: #16a34a;
-  color: white;
-}
-
-.card button.block {
-  background: #dc2626;
-  color: white;
-}
-
-.card button.unblock {
+.btn-approve {
   background: #2563eb;
   color: white;
 }
+.btn-approve:hover { background: #1d4ed8; }
 
+.btn-disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Block / Unblock Buttons */
+.btn-block { 
+  background: #fee2e2; 
+  color: #dc2626; 
+}
+.btn-block:hover { background: #fecaca; }
+
+.btn-unblock { 
+  background: #f3f4f6; 
+  color: #4b5563; 
+}
+.btn-unblock:hover { background: #e5e7eb; }
